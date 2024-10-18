@@ -1,0 +1,15 @@
+{
+    "FOV": 90,
+    "Ratio": [16, 9],
+    "TankControls": false,
+    "FPS": 30,
+    "DEBUG": true,
+    "StartMap": 0,
+    "JumpHeight": 50,
+    "JumpTime": 0.5,
+    "RunSpeed": 2,
+    "HitboxSize": 20,
+    "ZFar": 1000,
+    "ZNear": 0.1,
+    "AmbientLight": 0.4
+}

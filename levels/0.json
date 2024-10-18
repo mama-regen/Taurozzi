@@ -1,0 +1,19 @@
+{
+    "meshes": [
+        {
+            "model": "test",
+            "texture": [120, 120, 120, 1],
+            "location" : [20, 20, 25]
+        },
+        {
+            "model": "cube",
+            "location": [0, 0, 20]
+        }
+    ],
+    "lights": [
+        {
+            "location": [5, 10, 0],
+            "falloff": [20, 50]
+        }
+    ]
+}
