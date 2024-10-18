@@ -11,5 +11,6 @@
     "HitboxSize": 20,
     "ZFar": 1000,
     "ZNear": 0.1,
-    "AmbientLight": 0.4
+    "AmbientLight": 0.4,
+    "Quality": 4
 }

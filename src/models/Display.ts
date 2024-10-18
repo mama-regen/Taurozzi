@@ -191,136 +191,7 @@ import { Transform } from "../types/Transforms.js";
         this.Ctx.restore();
     }
 
-    private TextureTri(tri: Triangle, texture: string, light: number = 1) {
-        light = 1;
-        this.Ctx.save();
-
-        if (tri.Q.Y < tri.P.Y) tri.Swap('Q', 'P');
-        if (tri.R.Y < tri.P.Y) tri.Swap('R', 'P');
-        if (tri.R.Y < tri.Q.Y) tri.Swap('R', 'Q');
-
-        const deltaXY1 = Vector.Subtract(tri.Q, tri.P);
-        const deltaUV1 = Coord.Subtract(tri.UV!.Q, tri.UV!.P);
-        const deltaXY2 = Vector.Subtract(tri.R, tri.P);
-        const deltaUV2 = Coord.Subtract(tri.UV!.R, tri.UV!.P);
-
-        const tex: coord = {U: 0, V: 0, W: 0};
-
-        const deltaStep1 = {X:0, U:0, V:0, W:0} as coord & {X: number};
-        const deltaStep2 = Object.assign({}, deltaStep1) as coord & {X: number};
-
-        if (deltaXY2.Y) {
-            const dy2 = Math.abs(deltaXY2.Y);
-            deltaStep2.X = deltaXY2.X / dy2;
-            deltaStep2.U = deltaUV2.U / dy2;
-            deltaStep2.V = deltaUV2.V / dy2;
-            deltaStep2.W = deltaUV2.W / dy2;
-        }
-
-        if (deltaXY1.Y) {
-            const dy1 = Math.abs(deltaXY1.Y);
-            deltaStep1.X = deltaXY1.X / dy1;
-            deltaStep1.U = deltaUV1.U / dy1;
-            deltaStep1.V = deltaUV1.V / dy1;
-            deltaStep1.W = deltaUV1.W / dy1;
-
-            for (let y = tri.P.Y; y < tri.Q.Y; y++) {
-                const yDiff = (y - tri.P.Y);
-
-                let aX = tri.P.X + yDiff * deltaStep1.X;
-                let bX = tri.P.X + yDiff * deltaStep2.X;
-                let texStart = Coord.Add(tri.UV!.P, Coord.Multiply(deltaStep1, yDiff));
-                let texEnd = Coord.Add(tri.UV!.P, Coord.Multiply(deltaStep2, yDiff));
-
-                if (aX > bX) {
-                    const t1 = aX;
-                    aX = bX;
-                    bX = t1;
-
-                    const t2 = texStart;
-                    texStart = texEnd;
-                    texEnd = t2;
-                }
-
-                tex.U = texStart.U;
-                tex.V = texStart.V;
-                tex.W = texStart.W;
-
-                let t = 0;
-                const tStep = 1/(bX - aX);
-
-                for (let x = aX; x < bX; x++) {
-                    tex.U = (1 - t) * texStart.U + t * texEnd.U;
-                    tex.V = (1 - t) * texStart.V + t * texEnd.V;
-                    tex.W = (1 - t) * texStart.W + t * texEnd.W;
-
-                    const pixel = Texture.GetPixel(texture, tex.U/tex.W, tex.V/tex.W);
-                    this.Ctx.fillStyle = `rgba(${(pixel[0] * light)|0}, ${(pixel[1] * light)|0}, ${(pixel[2] * light)|0}, ${pixel[3]})`;
-                    this.Ctx.fillRect(x, y, 1, 1);
-
-                    t += tStep;
-                }
-            }
-        }
-
-        deltaXY1.Y = tri.R.Y - tri.Q.Y;
-        deltaXY1.X = tri.R.X - tri.Q.X;
-        deltaUV1.U = tri.UV!.R.U - tri.UV!.Q.U;
-        deltaUV1.V = tri.UV!.R.V - tri.UV!.Q.V;
-        deltaUV1.W = tri.UV!.R.W - tri.UV!.Q.W;
-
-        if (deltaXY2.Y) deltaStep2.X = deltaXY2.X / Math.abs(deltaXY2.Y);
-        deltaStep1.U = deltaStep1.V = 0;
-
-        if (deltaXY1.Y) {
-            const dy1 = Math.abs(deltaXY1.Y);
-            deltaStep1.X = deltaXY1.X / dy1;
-            deltaStep1.U = deltaUV1.U / dy1;
-            deltaStep1.V = deltaUV1.V / dy1;
-            deltaStep1.W = deltaUV1.W / dy1;
-
-            for (let y = tri.Q.Y; y < tri.R.Y; y++) {
-                const yDiff1 = (y - tri.P.Y);
-                const yDiff2 = (y - tri.Q.Y);
-
-                let aX = tri.Q.X + yDiff2 * deltaStep1.X;
-                let bX = tri.P.X + yDiff1 * deltaStep2.X;
-                let texStart = Coord.Add(tri.UV!.Q, Coord.Multiply(deltaStep1, yDiff2));
-                let texEnd = Coord.Add(tri.UV!.P, Coord.Multiply(deltaStep2, yDiff1));
-
-                if (aX > bX) {
-                    const t1 = aX;
-                    aX = bX;
-                    bX = t1;
-
-                    const t2 = texStart;
-                    texStart = texEnd;
-                    texEnd = t2;
-                }
-
-                tex.U = texStart.U;
-                tex.V = texStart.V;
-                tex.W = texStart.W;
-
-                let t = 0;
-                const tStep = 1/(bX - aX);
-
-                for (let x = aX; x < bX; x++) {
-                    tex.U = (1 - t) * texStart.U + t * texEnd.U;
-                    tex.V = (1 - t) * texStart.V + t * texEnd.V;
-                    tex.W = (1 - t) * texStart.W + t * texEnd.W;
-
-                    const pixel = Texture.GetPixel(texture, tex.U/tex.W, tex.V/tex.W);
-                    this.Ctx.fillStyle = `rgba(${(pixel[0] * light)|0}, ${(pixel[1] * light)|0}, ${(pixel[2] * light)|0}, ${pixel[3]})`;
-                    this.Ctx.fillRect(x, y, 1, 1);
-
-                    t += tStep;
-                }
-            }
-        }
-
-        this.Ctx.restore();
-    }
+    
 
     private ResizeListener() {
         const fillHeight: boolean = window.innerHeight / SETTINGS.Ratio[1] <= window.innerWidth / SETTINGS.Ratio[0];
@@ -438,7 +309,11 @@ export const Display = new class __Display {
                     projP.Vector.Multiply(flip).Add(offset).Multiply(correction),
                     projQ.Vector.Multiply(flip).Add(offset).Multiply(correction),
                     projR.Vector.Multiply(flip).Add(offset).Multiply(correction),
-                    clipped.UV ? [clipped.UV.P, clipped.UV.Q, clipped.UV.R] : void 0
+                    clipped.UV ? [
+                        clipped.UV.P.Divide(projP.W),
+                        clipped.UV.Q.Divide(projQ.W),
+                        clipped.UV.R.Divide(projR.W)
+                    ] : void 0
                 );
 
                 triBuffer.push([projTri, mesh.Lighting[i]]);
@@ -453,7 +328,7 @@ export const Display = new class __Display {
         ] as Array<[Vector, Vector]>;
 
         const dist = (t: Triangle) => (t.P.Z + t.Q.Z + t.R.Z) / 3;
-        triBuffer.sort((a, b) => dist(a[0]) - dist(b[0])).forEach(([tri, light]) => {
+        triBuffer.sort((a, b) => dist(b[0]) - dist(a[0])).forEach(([tri, light]) => {
             let newTris = 1;
             const triList = new Array<Triangle>();
             triList.push(tri);
@@ -469,14 +344,28 @@ export const Display = new class __Display {
             });
             
             triList.forEach((drawTri) => {
-                this.ColorTri(drawTri, new Color(120, 120, 120), light);
-            })
+                if (typeof mesh.Texture != 'string') this.ColorTri(drawTri, mesh.Texture, 1);
+                else this.TextureTri(drawTri, mesh.Texture, 1);
+
+                if (SETTINGS.DEBUG) {
+                    this.Ctx.save();
+    
+                    ['white', 'black'].forEach((c, i) => {
+                        this.Ctx.strokeStyle = c;
+                        this.Ctx.lineWidth = 4 - (i * 2);
+                        this.Ctx.moveTo(drawTri.P.X, drawTri.P.Y);
+                        this.Ctx.lineTo(drawTri.Q.X, drawTri.Q.Y);
+                        this.Ctx.lineTo(drawTri.R.X, drawTri.R.Y);
+                        this.Ctx.stroke();
+                    });
+
+                    this.Ctx.restore();
+                }
+            });
         });
     }
 
     private ColorTri(tri: Triangle, color: Color, light: number = 1) {
-        console.log('DRAW TRIANGLE', tri);
-        light = 1;
         this.Ctx.save();
 
         const colorStr = color.ApplyLight(light).ToString();
@@ -491,6 +380,136 @@ export const Display = new class __Display {
         
         this.Ctx.fill();
         this.Ctx.stroke();
+
+        this.Ctx.restore();
+    }
+
+    private TextureTri(tri: Triangle, texture: string, light: number = 1) {
+        this.Ctx.save();
+
+        if (tri.Q.Y < tri.P.Y) tri.Swap('Q', 'P');
+        if (tri.R.Y < tri.P.Y) tri.Swap('R', 'P');
+        if (tri.R.Y < tri.Q.Y) tri.Swap('R', 'Q');
+
+        const deltaXY1 = Vector.Subtract(tri.Q, tri.P);
+        const deltaUV1 = Coord.Subtract(tri.UV!.Q, tri.UV!.P);
+        const deltaXY2 = Vector.Subtract(tri.R, tri.P);
+        const deltaUV2 = Coord.Subtract(tri.UV!.R, tri.UV!.P);
+
+        const tex: coord = {U: 0, V: 0, W: 0};
+
+        const deltaStep1 = {X:0, U:0, V:0, W:0} as coord & {X: number};
+        const deltaStep2 = Object.assign({}, deltaStep1) as coord & {X: number};
+
+        if (deltaXY2.Y) {
+            const dy2 = Math.abs(deltaXY2.Y);
+            deltaStep2.X = deltaXY2.X / dy2;
+            deltaStep2.U = deltaUV2.U / dy2;
+            deltaStep2.V = deltaUV2.V / dy2;
+            deltaStep2.W = deltaUV2.W / dy2;
+        }
+
+        if (deltaXY1.Y) {
+            const dy1 = Math.abs(deltaXY1.Y);
+            deltaStep1.X = deltaXY1.X / dy1;
+            deltaStep1.U = deltaUV1.U / dy1;
+            deltaStep1.V = deltaUV1.V / dy1;
+            deltaStep1.W = deltaUV1.W / dy1;
+
+            for (let y = tri.P.Y; y < tri.Q.Y; y += SETTINGS.Quality) {
+                const yDiff = (y - tri.P.Y);
+
+                let aX = tri.P.X + yDiff * deltaStep1.X;
+                let bX = tri.P.X + yDiff * deltaStep2.X;
+                let texStart = Coord.Add(tri.UV!.P, Coord.Multiply(deltaStep1, yDiff));
+                let texEnd = Coord.Add(tri.UV!.P, Coord.Multiply(deltaStep2, yDiff));
+
+                if (aX > bX) {
+                    const t1 = aX;
+                    aX = bX;
+                    bX = t1;
+
+                    const t2 = texStart;
+                    texStart = texEnd;
+                    texEnd = t2;
+                }
+
+                tex.U = texStart.U;
+                tex.V = texStart.V;
+                tex.W = texStart.W;
+
+                let t = 0;
+                const tStep = 1/(bX - aX);
+
+                for (let x = aX; x < bX; x += SETTINGS.Quality) {
+                    tex.U = (1 - t) * texStart.U + t * texEnd.U;
+                    tex.V = (1 - t) * texStart.V + t * texEnd.V;
+                    tex.W = (1 - t) * texStart.W + t * texEnd.W;
+
+                    const pixel = Texture.GetPixel(texture, tex.U/tex.W, tex.V/tex.W);
+                    this.Ctx.fillStyle = `rgba(${(pixel[0] * light)|0}, ${(pixel[1] * light)|0}, ${(pixel[2] * light)|0}, ${pixel[3]})`;
+                    this.Ctx.fillRect(x, y, SETTINGS.Quality, SETTINGS.Quality);
+
+                    t += tStep * SETTINGS.Quality;
+                }
+            }
+        }
+
+        deltaXY1.Y = tri.R.Y - tri.Q.Y;
+        deltaXY1.X = tri.R.X - tri.Q.X;
+        deltaUV1.U = tri.UV!.R.U - tri.UV!.Q.U;
+        deltaUV1.V = tri.UV!.R.V - tri.UV!.Q.V;
+        deltaUV1.W = tri.UV!.R.W - tri.UV!.Q.W;
+
+        if (deltaXY2.Y) deltaStep2.X = deltaXY2.X / Math.abs(deltaXY2.Y);
+        deltaStep1.U = deltaStep1.V = 0;
+
+        if (deltaXY1.Y) {
+            const dy1 = Math.abs(deltaXY1.Y);
+            deltaStep1.X = deltaXY1.X / dy1;
+            deltaStep1.U = deltaUV1.U / dy1;
+            deltaStep1.V = deltaUV1.V / dy1;
+            deltaStep1.W = deltaUV1.W / dy1;
+
+            for (let y = tri.Q.Y; y < tri.R.Y; y += SETTINGS.Quality) {
+                const yDiff1 = (y - tri.P.Y);
+                const yDiff2 = (y - tri.Q.Y);
+
+                let aX = tri.Q.X + yDiff2 * deltaStep1.X;
+                let bX = tri.P.X + yDiff1 * deltaStep2.X;
+                let texStart = Coord.Add(tri.UV!.Q, Coord.Multiply(deltaStep1, yDiff2));
+                let texEnd = Coord.Add(tri.UV!.P, Coord.Multiply(deltaStep2, yDiff1));
+
+                if (aX > bX) {
+                    const t1 = aX;
+                    aX = bX;
+                    bX = t1;
+
+                    const t2 = texStart;
+                    texStart = texEnd;
+                    texEnd = t2;
+                }
+
+                tex.U = texStart.U;
+                tex.V = texStart.V;
+                tex.W = texStart.W;
+
+                let t = 0;
+                const tStep = 1/(bX - aX);
+
+                for (let x = aX; x < bX; x += SETTINGS.Quality) {
+                    tex.U = (1 - t) * texStart.U + t * texEnd.U;
+                    tex.V = (1 - t) * texStart.V + t * texEnd.V;
+                    tex.W = (1 - t) * texStart.W + t * texEnd.W;
+
+                    const pixel = Texture.GetPixel(texture, tex.U/tex.W, tex.V/tex.W);
+                    this.Ctx.fillStyle = `rgba(${(pixel[0] * light)|0}, ${(pixel[1] * light)|0}, ${(pixel[2] * light)|0}, ${pixel[3]})`;
+                    this.Ctx.fillRect(x, y, 1, 1);
+
+                    t += tStep * SETTINGS.Quality;
+                }
+            }
+        }
 
         this.Ctx.restore();
     }
