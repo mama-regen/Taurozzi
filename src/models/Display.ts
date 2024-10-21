@@ -504,7 +504,7 @@ export const Display = new class __Display {
 
                     const pixel = Texture.GetPixel(texture, tex.U/tex.W, tex.V/tex.W);
                     this.Ctx.fillStyle = `rgba(${(pixel[0] * light)|0}, ${(pixel[1] * light)|0}, ${(pixel[2] * light)|0}, ${pixel[3]})`;
-                    this.Ctx.fillRect(x, y, 1, 1);
+                    this.Ctx.fillRect(x, y, SETTINGS.Quality, SETTINGS.Quality);
 
                     t += tStep * SETTINGS.Quality;
                 }

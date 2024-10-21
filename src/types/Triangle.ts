@@ -70,8 +70,8 @@ export class Triangle implements triangle {
 
         let t = 0;
 
-        const dist = (p: Vector) => plane.DotProduct(p.Normal) - plane.DotProduct(vector);
-        const line = (outI: number, inI: number) => tex.outside[outI].Subtract(tex.inside[inI]).Multiply(t).Subtract(tex.inside[inI]);
+        const dist = (p: Vector) => plane.DotProduct(p) - plane.DotProduct(vector);
+        const line = (outI: number, inI: number) => tex.outside[outI].Subtract(tex.inside[inI]).Multiply(t).Add(tex.inside[inI]);
         
         let wch: 'inside'|'outside';
         const keys = ['P','Q','R'] as ['P','Q','R'];
@@ -81,40 +81,36 @@ export class Triangle implements triangle {
             if (this.UV) tex[wch].push(this.UV[key]);
         });
 
+        let newTriA: Triangle = new Triangle(this.P, this.Q, this.R, this.UV ? [this.UV.P, this.UV.Q, this.UV.R] : void 0);
+        let newTriB: Triangle;
+
         switch(verts.inside.length) {
             case 1:
-                this.P = verts.inside[0];
-                if (this.UV) this.UV.P = tex.inside[0];
+                newTriA.P = verts.inside[0];
+                if (this.UV) newTriA.UV!.P = tex.inside[0];
     
-                [this.Q, t] = vector.Intersect(plane, verts.inside[0], verts.outside[0]);
-                if (this.UV) this.UV.Q = line(0, 0);
+                [newTriA.Q, t] = vector.Intersect(plane, verts.inside[0], verts.outside[0]);
+                if (this.UV) newTriA.UV!.Q = line(0, 0);
     
-                [this.R, t] = vector.Intersect(plane, verts.inside[0], verts.outside[1]);
-                if (this.UV) this.UV.R = line(1, 0);
+                [newTriA.R, t] = vector.Intersect(plane, verts.inside[0], verts.outside[1]);
+                if (this.UV) newTriA.UV!.R = line(1, 0);
             case 3:
-                return [this];
+                return [newTriA];
             case 2:
-                const newTri = new Triangle(Vector.Zero, Vector.Zero, Vector.Zero);
-
-                this.P = verts.inside[0];
-                this.Q = verts.inside[1];
-                [this.R, t] = vector.Intersect(plane, verts.inside[0], verts.outside[0]);
+                newTriA.P = verts.inside[0];
+                newTriA.Q = verts.inside[1];
+                [newTriA.R, t] = vector.Intersect(plane, verts.inside[0], verts.outside[0]);
                 if (this.UV) {
-                    this.UV.P = tex.inside[0];
-                    this.UV.Q = tex.inside[1];
-                    this.UV.R = line(0, 0);
+                    newTriA.UV!.P = tex.inside[0];
+                    newTriA.UV!.Q = tex.inside[1];
+                    newTriA.UV!.R = line(0, 0);
                 }
 
-                newTri.P = verts.inside[1];
-                newTri.Q = this.R;
-                [newTri.R, t] = vector.Intersect(plane, verts.inside[1], verts.outside[0]);
-                if (this.UV) newTri.UV = {
-                    P: tex.inside[1],
-                    Q: this.UV!.R,
-                    R: line(0, 1)
-                };
+                let newR: Vector;
+                [newR, t] = vector.Intersect(plane, verts.inside[1], verts.outside[0]);
+                newTriB = new Triangle(verts.inside[1], newTriA.R, newR, this.UV ? [tex.inside[1], newTriA.UV!.R, line(0, 1)] : void 0);
 
-                return [this, newTri];
+                return [newTriA, newTriB];
         }
     }
 }

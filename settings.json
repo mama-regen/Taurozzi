@@ -3,7 +3,7 @@
     "Ratio": [16, 9],
     "TankControls": false,
     "FPS": 30,
-    "DEBUG": true,
+    "DEBUG": false,
     "StartMap": 0,
     "JumpHeight": 50,
     "JumpTime": 0.5,
