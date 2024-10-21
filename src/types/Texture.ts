@@ -4,7 +4,7 @@ const Textures: Obj<ImageData> = {};
 
 export class Texture {
     static GetPixel(texture: string, u: number, v: number): [number, number, number, number] {
-        const U = (u * Textures[texture].width)|0;
+        const U = Textures[texture].width - (u * Textures[texture].width)|0;
         const V = (v * Textures[texture].height)|0;
         const idx = (V * Textures[texture].width + U) * 4;
         const d = Textures[texture].data;
